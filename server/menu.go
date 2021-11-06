@@ -49,27 +49,23 @@ func doMenu() (menuAction, error) {
 
 func doLaunch() (foo menuAction, err error) {
 	fmt.Print(launchStr)
-
-	return doMenu, nil
+	return doMenu, launch()
 }
 
 func doKeyInit() (foo menuAction, err error) {
 	fmt.Print(keyInitStr)
-
-	return doMenu, nil
-
+	return doMenu, keyInit()
 }
 
 func doExit() (foo menuAction, err error) {
 	fmt.Print(exitStr)
-
 	return nil, errors.New("Exit")
 }
 
 func getInput() (res string) {
 	fmt.Print(">")
 
-	fmt.Scan(&res)
+	fmt.Scanln(&res)
 
 	return res
 }
@@ -94,9 +90,7 @@ LAUNCH
 	keyInitStr = `_____________
 KEY INIT
 
-1. Pass phrase
-2. Iterations
-3. Seed
+Enter new init values:
 
 `
 	exitStr = `_____________

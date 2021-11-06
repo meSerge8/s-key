@@ -1,11 +1,29 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
-func main() {
-	err := start()
-	if err != nil {
-		fmt.Println(err)
+var (
+	address_port = "localhost:8080"
+	passphrase   = "passphrase"
+	iterations   = 1000
+	seed         string
+)
+
+func launch() error {
+	getAddresPort()
+
+	fmt.Println(address_port)
+
+	return nil
+}
+
+func getAddresPort() {
+	if len(os.Args) != 2 {
+		return
 	}
-	fmt.Println("Bye ...")
+
+	address_port = os.Args[1]
 }
