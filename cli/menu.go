@@ -1,72 +1,62 @@
-package main
+package cli
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
 
 type menuAction func() (menuAction, error)
 
-func start() (err error) {
+var handler cliHandler
+
+func Start(h cliHandler) (err error) {
 	fmt.Print(helloStr)
 
-	actionFoo := menuAction(doMenu)
-	for {
-		actionFoo, err = actionFoo()
-
+	handler = h
+	for action := showMenu; action != nil; action, err = action() {
 		if err != nil {
-			break
+			return err
 		}
-	}
-
-	if err.Error() == "Exit" {
-		err = nil
 	}
 
 	return
 }
 
-func doMenu() (menuAction, error) {
+func showMenu() (m menuAction, err error) {
 	fmt.Print(menuStr)
 
-	str := strings.TrimSpace(getInput())
-	foo := menuAction(doMenu)
-
-	switch str {
+	switch strings.TrimSpace(getInput()) {
 	case "1":
-		foo = doLaunch
+		m = launch
 
 	case "2":
-		foo = doKeyInit
+		m = keyinit
 
 	case "3":
-		foo = doExit
+		m = exit
 	}
 
-	return foo, nil
+	return showMenu, nil
 }
 
-func doLaunch() (foo menuAction, err error) {
+func launch() (menuAction, error) {
 	fmt.Print(launchStr)
-	return doMenu, launch()
+	return showMenu, handler.Launch()
 }
 
-func doKeyInit() (foo menuAction, err error) {
+func keyinit() (menuAction, error) {
 	fmt.Print(keyInitStr)
-	return doMenu, keyInit()
+	return showMenu, handler.Keyinit()
 }
 
-func doExit() (foo menuAction, err error) {
+func exit() (menuAction, error) {
 	fmt.Print(exitStr)
-	return nil, errors.New("Exit")
+	return nil, handler.Exit()
 }
 
 func getInput() (res string) {
 	fmt.Print(">")
-
 	fmt.Scanln(&res)
-
 	return res
 }
 
