@@ -1,26 +1,57 @@
-package main
+package client
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"net"
-	"os"
+	"server/skey"
 )
 
-func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s host:port ", os.Args[0])
-		os.Exit(1)
-	}
-	serv := os.Args[1]               // берем адрес сервера из аргументов командной строки
-	conn, _ := net.Dial("tcp", serv) // открываем TCP-соединение к серверу
-	go copyTo(os.Stdout, conn)       // читаем из сокета в stdout
-	copyTo(conn, os.Stdin)           // пишем в сокет из stdin
+type Client struct {
+	Address_port string
+	Passphrase   string
+	iterations   int
+	seed         int
+	clientKeys   []skey.Key
 }
 
-func copyTo(dst io.Writer, src io.Reader) {
-	if _, err := io.Copy(dst, src); err != nil {
+func New(addr, pass string) Client {
+	return Client{addr, pass, 1000, 10, make([]skey.Key, 10)}
+}
+
+func (s Client) Launch() (err error) {
+	conn, err := net.Dial("tcp", "localhost:8080")
+	defer conn.Close()
+	if err != nil {
+		return err
+	}
+
+	msg, err := ReadAll(conn)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(msg)
+
+	return nil
+}
+
+func checkErr(err error) {
+
+	if err != nil {
+
 		log.Fatal(err)
 	}
+}
+
+func ReadAll(c net.Conn) (string, error) {
+	buffer := bytes.NewBuffer([]byte{})
+
+	_, err := buffer.ReadFrom(c)
+	if err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
 }
