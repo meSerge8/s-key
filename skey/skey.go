@@ -3,6 +3,7 @@ package skey
 import (
 	"encoding/binary"
 	"errors"
+	"log"
 	"strconv"
 
 	"github.com/cespare/xxhash"
@@ -19,6 +20,10 @@ type Skey struct {
 }
 
 func New(passphrase string, seed int, iterations int) Skey {
+	if iterations < 1 {
+		panic("iterations must be at least 1")
+	}
+
 	sk := Skey{
 		passphrase: passphrase,
 		seed:       seed,
@@ -34,22 +39,28 @@ func (sk *Skey) GetServerInit() Key {
 }
 
 func (sk *Skey) GetCurrent() Key {
+	log.Println("counter:", sk.counter)
+	log.Println("key:", sk.Keys[sk.counter])
 	return sk.Keys[sk.counter]
 }
 
 func (sk *Skey) GetNext() (Key, error) {
 	sk.counter++
 
-	if sk.counter >= sk.iterations {
+	if sk.counter == sk.iterations {
+		sk.counter--
 		return 0, errors.New("out of keys")
 	}
-	k := sk.Keys[sk.counter]
 
-	return k, nil
+	return sk.Keys[sk.counter], nil
 }
 
 func Check(new Key, old Key) bool {
 	return hash64(new) == old
+}
+
+func (sk *Skey) IsLast() bool {
+	return (sk.counter + 1) == sk.iterations
 }
 
 func (sk *Skey) getKeys() {
@@ -79,4 +90,15 @@ func reverse(xs []Key) []Key {
 		xs[i], xs[j] = xs[j], xs[i]
 	}
 	return xs
+}
+
+func (sk *Skey) GetInfo() (seed, iterations, keysLeft int, curKey uint64) {
+	for i, key := range sk.Keys {
+		if key == sk.GetCurrent() {
+			keysLeft = sk.iterations - i
+			break
+		}
+	}
+
+	return sk.seed, sk.iterations, keysLeft, uint64(sk.GetCurrent())
 }
