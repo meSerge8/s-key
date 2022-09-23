@@ -3,7 +3,6 @@ package skey
 import (
 	"encoding/binary"
 	"errors"
-	"log"
 	"strconv"
 
 	"github.com/cespare/xxhash"
@@ -39,8 +38,6 @@ func (sk *Skey) GetServerInit() Key {
 }
 
 func (sk *Skey) GetCurrent() Key {
-	log.Println("counter:", sk.counter)
-	log.Println("key:", sk.Keys[sk.counter])
 	return sk.Keys[sk.counter]
 }
 

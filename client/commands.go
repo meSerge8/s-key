@@ -3,8 +3,6 @@ package client
 import (
 	"bufio"
 	"errors"
-	"fmt"
-	"log"
 	"server/skey"
 	"server/utils"
 )
@@ -50,8 +48,6 @@ func restore() error {
 }
 
 func compose(msg string) error {
-	log.Println("compose")
-
 	if sk.IsLast() {
 		if err := refresh(); err != nil {
 			return err
@@ -74,26 +70,16 @@ func compose(msg string) error {
 }
 
 func refresh() error {
-	log.Println("refresh")
 	if err := sendByte(2); err != nil {
 		return err
 	}
 
-	fmt.Println("good1")
 	if err := checkKey(); err != nil {
-		// log.Fatal(err)
-		fmt.Println(err)
 
 		if err.Error() != "out of keys" {
 			return err
 		}
 	}
-	// bb := make([]byte, 5)
-	// con.Read(bb)
-	// fmt.Println(bb)
-	// os.Exit(0)
-
-	fmt.Println("good3")
 
 	seed, err := readUint32()
 	if err != nil {
@@ -105,13 +91,7 @@ func refresh() error {
 		return err
 	}
 
-	fmt.Println("good4")
-	fmt.Println("PSWD:", passwd)
-	fmt.Println("SEED:", seed)
-	fmt.Println("ITER:", iterations)
 	*sk = skey.New(passwd, int(seed), int(iterations))
-	log.Println("refreshed")
-	fmt.Println("good5")
 
 	return getStatus()
 }
@@ -171,6 +151,6 @@ func readUint32() (uint32, error) {
 	if _, err := con.Read(bs); err != nil {
 		return 0, err
 	}
-	fmt.Println("Read32:", bs)
+
 	return utils.FromBytes32(bs), nil
 }

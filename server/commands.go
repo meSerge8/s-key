@@ -50,32 +50,24 @@ func find(con net.Conn, c *skeydb.Client) (*skeydb.Client, error) {
 }
 
 func refresh(con net.Conn, c *skeydb.Client) (*skeydb.Client, error) {
-	fmt.Println("refresh")
-
 	if err := checkKey(con, c); err != nil {
 		return nil, err
 
 	}
-	// con.Write([]byte{1, 2, 3, 4, 5})
-	// os.Exit(0)
 
 	var seed uint32
 	*c, seed = db.RefreshKey(*c)
-
-	fmt.Println(utils.ToBytes32(seed))
 
 	if _, err := con.Write(utils.ToBytes32(seed)); err != nil {
 		return nil, err
 	}
 
-	fmt.Println(utils.ToBytes32(iterations))
 	if _, err := con.Write(utils.ToBytes32(iterations)); err != nil {
 		return nil, err
 	}
 
 	fmt.Printf("Refresh keys:\tid = %d\tseed = %d\n", c.GetId(), seed)
 
-	//
 	return c, sendOk(con)
 }
 
@@ -96,8 +88,6 @@ func receive(con net.Conn, c *skeydb.Client) (*skeydb.Client, error) {
 }
 
 func checkKey(con net.Conn, cl *skeydb.Client) error {
-	fmt.Println("check key")
-
 	keyBs := make([]byte, 8)
 	if _, err := con.Read(keyBs); err != nil {
 		return err
@@ -126,7 +116,6 @@ func closeConnection(con net.Conn, c *skeydb.Client) (*skeydb.Client, error) {
 }
 
 func sendOk(con net.Conn) error {
-	fmt.Println("send ok")
 	_, err := con.Write([]byte{1})
 	return err
 }
